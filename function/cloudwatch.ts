@@ -1,6 +1,10 @@
-import { Website } from "./type";
 import { CloudWatch } from "aws-sdk";
 import { checkWebsiteHealth } from "./websiteHealth";
+
+interface Website {
+  url: string;
+  name: string;
+}
 
 const cloudWatch = new CloudWatch();
 const DASHBOARD_NAME = "DebOpsKiyo";

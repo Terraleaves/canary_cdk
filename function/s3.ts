@@ -1,5 +1,9 @@
-import { Website } from "./type";
 import { S3 } from "aws-sdk";
+
+interface Website {
+  url: string;
+  name: string;
+}
 
 // Get website data from S3
 export async function getWebsitesFromS3(
