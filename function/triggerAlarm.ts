@@ -1,11 +1,10 @@
 import { SNS } from "aws-sdk";
 
 const AVAILABILITY_THRESHOLD = 99.0;
-// const SNS_TOPIC_ARN = "arn:aws:sns:ap-southeast-2:325861338157:demo-ccp";
 
-const sns = new SNS();
+const sns = new SNS({region: "ap-southeast-2"});
 
-// Create SNS
+// Create SNS and return arn value
 export async function createSNSTopicAndSendMessage(): Promise<any> {
   try {
     // 1: Create an SNS topic
@@ -14,15 +13,13 @@ export async function createSNSTopicAndSendMessage(): Promise<any> {
       .createTopic({ Name: topicName })
       .promise();
     const topicArn = createTopicResponse.TopicArn;
-    const email = "kiyohiro.0310@gmail.com"; // Email address to subscribe
-
-    console.log(`SNS Topic ARN: ${topicArn}`);
+    const email = "kiyohiro.0310@gmail.com";
 
     // 2: Subscribe the email to the topic
     const subscribeParams = {
-      Protocol: "email", // Protocol for email
+      Protocol: "email",
       TopicArn: topicArn!,
-      Endpoint: email, // Email address to subscribe
+      Endpoint: email,
     };
 
     // 3. Add subscriobe to topic
@@ -33,7 +30,7 @@ export async function createSNSTopicAndSendMessage(): Promise<any> {
 
     // 4. Check if the email is already subscribed
     const isSubscribed = subscriptions.some(
-      (sub) => sub.Protocol === "email" && sub.Endpoint === email
+      (subscription) => subscription.Protocol === "email" && subscription.Endpoint === email
     );
 
     if (isSubscribed) {
@@ -41,6 +38,8 @@ export async function createSNSTopicAndSendMessage(): Promise<any> {
     } else {
       // 5. If not subscribed, create a new email subscription
       const subscribeResponse = await sns.subscribe(subscribeParams).promise();
+
+      // Checing subscription has been done
       console.log(
         `Subscription request sent. Subscription ARN: ${subscribeResponse.SubscriptionArn}`
       );
@@ -50,8 +49,8 @@ export async function createSNSTopicAndSendMessage(): Promise<any> {
 
       console.log(`Message sent successfully to topic.`);
     }
-
     if (topicArn) return topicArn;
+
   } catch (error) {
     console.error("Error creating topic or sending message:", error);
   }
@@ -65,6 +64,7 @@ export async function triggerAlarm(
 ) {
   const message = `Website Health Alert of ${siteName} Availability: ${availability}% Latency: ${latency}ms`;
 
+  // Get arn
   const arn = await createSNSTopicAndSendMessage();
   const params = {
     Message: message,
@@ -77,5 +77,8 @@ export async function triggerAlarm(
       },
     },
   };
+
+  // Send message to all subscribed email
   await sns.publish(params).promise();
+  console.log("Send message successfully.");
 }
