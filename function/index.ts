@@ -1,8 +1,8 @@
-import { updateCWDashboardWithMetrics, sendMetricsToCloudWatch } from "./cloudwatch";
-import { getWebsitesFromS3 } from "./s3";
-import { checkWebsiteHealth } from "./websiteHealth";
-import { triggerAlarm } from "./triggerAlarm";
-import { logAlarmToDynamoDB } from "./dynamoDB";
+import { updateCWDashboardWithMetrics, sendMetricsToCloudWatch } from "./modules/cloudwatch";
+import { getWebsitesFromS3 } from "./modules/s3";
+import { checkWebsiteHealth } from "./modules/websiteHealth";
+import { triggerAlarm } from "./modules/triggerAlarm";
+import { logAlarmToDynamoDB } from "./modules/dynamoDB";
 
 // Configuration
 const BUCKET_NAME = "kiyo-devops-demo-webpage";

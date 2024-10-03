@@ -13,20 +13,32 @@ import * as targets from "aws-cdk-lib/aws-events-targets";
 export class DevOpsStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
+    // 1. Create an SNS Topic and add email subscription to the SNS topic
     const alarmTopic = this.createSNSTopic();
+
+    // 2. Create CloudWatch Dashboard
     const dashboard = this.createCWDashBoard();
+
+    // 3. Crete dynamoDB table
     const dynammoDBTable = this.createDynamoDBTable();
+
+    // 4. Create Lambda function
     const canaryFunction = this.createLambdaFunction(
       alarmTopic,
       dashboard,
       dynammoDBTable
     );
 
+    // 5. Provide permission to canary
     this.grantPermissions(canaryFunction, dynammoDBTable);
+
+    // 6. Create event rule of lambda execution
     this.createEventRule(canaryFunction);
   }
 
-  // 1. Create an SNS Topic and add email subscription to the SNS topic
+
+
+  // Create an SNS Topic and add email subscription to the SNS topic
   private createSNSTopic(): sns.Topic {
     const alarmTopic = new sns.Topic(this, "DevOpsNotificationTopic", {
       displayName: "Website Health Alarm Topic",
@@ -37,14 +49,14 @@ export class DevOpsStack extends cdk.Stack {
     return alarmTopic;
   }
 
-  // 2. Create CloudWatch Dashboard
+  // Create CloudWatch Dashboard
   private createCWDashBoard(): cloudwatchDashboards.Dashboard {
     return new cloudwatchDashboards.Dashboard(this, "DevOpsDashboard", {
       dashboardName: "DevOpsMonitoringDashboard",
     });
   }
 
-  // 3. Crete dynamoDB table
+  // Crete dynamoDB table
   private createDynamoDBTable(): dynamodb.Table {
     const table = new dynamodb.Table(this, "DevOpsAlarmLog", {
       partitionKey: {
@@ -53,7 +65,7 @@ export class DevOpsStack extends cdk.Stack {
       },
       sortKey: { name: "timestamp", type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PROVISIONED,
-      removalPolicy: cdk.RemovalPolicy.DESTROY, // Change to RETAIN for production environments
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
     table
       .autoScaleWriteCapacity({ minCapacity: 5, maxCapacity: 20 })
@@ -64,7 +76,7 @@ export class DevOpsStack extends cdk.Stack {
     return table;
   }
 
-  // 4. Create Lambda function
+  // Create Lambda function
   private createLambdaFunction(
     alarmTopic: sns.Topic,
     dashboard: cloudwatchDashboards.Dashboard,
