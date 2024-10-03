@@ -1,7 +1,7 @@
 import { createCloudWatchDashboard, sendMetricsToCloudWatch } from "./cloudwatch";
 import { getWebsitesFromS3 } from "./s3";
 import { checkWebsiteHealth } from "./websiteHealth";
-import { createSNSTopicAndSendMessage, triggerAlarm } from "./triggerAlarm";
+import { triggerAlarm } from "./triggerAlarm";
 import { logAlarmToDynamoDB } from "./dynamoDB";
 
 // Configuration
@@ -11,28 +11,29 @@ const FILE_KEY = "websites.json";
 
 exports.handler = async function (event: any) {
   try {
-    // 0. Create and attach policy to get permission
-
-
+    console.log("Function creating...");
     // 1. Get all website data from JSON file which is stored in S3 bucket
     const websites = await getWebsitesFromS3(BUCKET_NAME, FILE_KEY);
 
-    // 2. Create dashboard
+    // 2. Create CloudWatch Dashboard
+    // No widget can be added here because I need to fetch website data from S3 first, so creating dashboard is done in lambda function
     await createCloudWatchDashboard(websites);
+
 
     // 3. Create for loop to check each website condition
     for (const site of websites) {
       // 4. Check website health
       const { availability, latency } = await checkWebsiteHealth(site.url);
 
-      // 5. Send alarm if trigger condition is satisfied
-      await triggerAlarm(site.name, availability, latency);
+      // 5. Send metrics to cloudwatch
+      await sendMetricsToCloudWatch(site.name, availability, latency);
 
-      // 6. Send alarm data to dynamoDB
+      // 6. Send alarm if trigger condition is satisfied
+      if (availability < 100 || latency > 10000) await triggerAlarm(site.name, availability, latency);
+
+      // 7. Send alarm data to dynamoDB
       await logAlarmToDynamoDB(site.name, availability, latency);
 
-      // 7. Send metrics to cloudwatch
-      await sendMetricsToCloudWatch(site.url, site.name);
     }
 
   } catch (error) {
