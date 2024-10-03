@@ -15,8 +15,7 @@ exports.handler = async function (event: any) {
     // 1. Get all website data from JSON file which is stored in S3 bucket
     const websites = await getWebsitesFromS3(BUCKET_NAME, FILE_KEY);
 
-    // 2. Create CloudWatch Dashboard
-    // No widget can be added here because I need to fetch website data from S3 first, so creating dashboard is done in lambda function
+    // 2. Update CloudWatch Dashboard
     await createCloudWatchDashboard(websites);
 
 

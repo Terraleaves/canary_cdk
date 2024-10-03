@@ -21,7 +21,6 @@ export class DevOpsStack extends cdk.Stack {
     alarmTopic.addSubscription(new snsSubscriptions.EmailSubscription("kiyohiro.0310@gmail.com"));
 
     // 2. Create CloudWatch Dashboard
-    // No widget can be added here because I need to fetch website data from S3 first, so creating dashboard is done in lambda function
     const dashboard = new cloudwatchDashboards.Dashboard(this, "DevOpsDashboard", {
       dashboardName: "DevOpsMonitoringDashboard",
     });
@@ -55,12 +54,15 @@ export class DevOpsStack extends cdk.Stack {
       iam.ManagedPolicy.fromAwsManagedPolicyName("AdministratorAccess")
     );
 
-    table.grantWriteData(canaryFunction); // Grant write access to DynamoDB
+    // Grant write access to DynamoDB
+    table.grantWriteData(canaryFunction);
 
+    // Invoke canary function evenry minute
     const rule = new events.Rule(this, "CanaryFuncitonScheduleRule", {
       schedule: events.Schedule.rate(cdk.Duration.minutes(1))
     });
 
+    // Add rule to canary function
     rule.addTarget(new targets.LambdaFunction(canaryFunction));
   }
 }
