@@ -1,5 +1,4 @@
 import { CloudWatch } from "aws-sdk";
-import { checkWebsiteHealth } from "./websiteHealth";
 
 interface Website {
   url: string;
@@ -11,7 +10,7 @@ const DASHBOARD_NAME = process.env.CW_DASHBOARD_NAME!;
 const NAMESPACE = "WebsiteHealth";
 
 // Create dashboard
-export async function createCloudWatchDashboard(
+export async function updateCWDashboardWithMetrics(
   websites: Website[]
 ): Promise<void> {
 

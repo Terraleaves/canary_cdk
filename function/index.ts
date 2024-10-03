@@ -1,4 +1,4 @@
-import { createCloudWatchDashboard, sendMetricsToCloudWatch } from "./cloudwatch";
+import { updateCWDashboardWithMetrics, sendMetricsToCloudWatch } from "./cloudwatch";
 import { getWebsitesFromS3 } from "./s3";
 import { checkWebsiteHealth } from "./websiteHealth";
 import { triggerAlarm } from "./triggerAlarm";
@@ -16,7 +16,7 @@ exports.handler = async function (event: any) {
     const websites = await getWebsitesFromS3(BUCKET_NAME, FILE_KEY);
 
     // 2. Update CloudWatch Dashboard
-    await createCloudWatchDashboard(websites);
+    await updateCWDashboardWithMetrics(websites);
 
 
     // 3. Create for loop to check each website condition
@@ -32,7 +32,6 @@ exports.handler = async function (event: any) {
 
       // 7. Send alarm data to dynamoDB
       await logAlarmToDynamoDB(site.name, availability, latency);
-
     }
 
   } catch (error) {
