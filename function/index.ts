@@ -5,7 +5,7 @@ import { triggerAlarm } from "./modules/triggerAlarm";
 import { logAlarmToDynamoDB } from "./modules/dynamoDB";
 
 // Configuration
-const BUCKET_NAME = "wsu-widget-bucket-2024";
+const BUCKET_NAME = "wsu-canary-bucket-kiyo";
 const FILE_KEY = "websites.json";
 
 
